@@ -220,7 +220,7 @@ namespace :peepcode do
     desc "Install gems needed by PeepCode"
     task :special_gems do
       run "ruby -v"
-      %w(merb hpricot mongrel mongrel_cluster thin libxml-ruby gruff sparklines ar_mailer bong production_log_analyzer eventmachine amqp xmpp4r json rmagick).each do |gemname|
+      %w(memcache-client merb hpricot mongrel mongrel_cluster thin libxml-ruby gruff sparklines ar_mailer bong production_log_analyzer eventmachine amqp xmpp4r json rmagick).each do |gemname|
         sudo "gem install #{gemname} --no-rdoc --no-ri"
       end
       sudo "gem install mysql -- --with-mysql-lib=/usr/lib/mysql --with-mysql-include=/usr/include/mysql"
