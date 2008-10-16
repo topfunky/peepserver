@@ -1,0 +1,7 @@
+production:
+  adapter: mysql
+  encoding: utf8
+  database: app_production
+  username: root
+  password: 
+  socket: /tmp/mysql.sock

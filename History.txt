@@ -1,0 +1,5 @@
+== 2007-11-18
+
+* First release.
+* Generate spin script from mongrel_port and mongrel_servers variables.
+* Tasks to install nginx, memcached, munin, etc.
