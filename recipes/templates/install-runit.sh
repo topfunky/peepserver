@@ -16,7 +16,7 @@ chmod 1755 /package
 cd /package
 wget http://smarden.sunsite.dk/runit/runit-2.0.0.tar.gz
 tar xfz runit-2.0.0.tar.gz
-rm !$
+rm runit-2.0.0.tar.gz
 cd admin/runit-2.0.0
 ./package/install
 
@@ -29,4 +29,4 @@ cat >>/etc/inittab <<EOT
 SV:123456:respawn:/sbin/runsvdir-start
 EOT
 
-init q
+/sbin/init q
