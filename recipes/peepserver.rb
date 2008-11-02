@@ -368,6 +368,7 @@ namespace :peepcode do
         "sudo cp beanstalkd /usr/local/bin/"
       ].join(" && ")
       run cmd
+      # TODO Activate with runit
     end
 
     desc "Upgrade to Ruby 1.8.6 and newest RubyGems"

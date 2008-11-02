@@ -1,3 +1,7 @@
+== 2008-11-02
+
+* Added peepcode:install:runit task.
+
 == 2007-11-18
 
 * First release.
