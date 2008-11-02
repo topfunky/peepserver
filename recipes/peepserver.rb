@@ -98,6 +98,7 @@ namespace :peepcode do
       # TODO
       # * Uninstall httpd: chkconfig --del httpd
 
+      runit
       git
       nginx
       memcached
@@ -193,6 +194,20 @@ namespace :peepcode do
         "wget http://topfunky.net/svn/shovel/nginx/conf/nginx.conf"
       ].join(" && ")
       run cmd
+    end
+
+    desc "Install runit"
+    task :runit do
+      %w(install-runit.sh install-runit-for-user.sh).each do |filename|
+        result = File.read(File.dirname(__FILE__) + "/templates/#{filename}")
+        put result, "src/#{filename}", :mode => 0755
+      end
+
+      sudo "src/install-runit.sh"
+      # netcat is used by some scripts
+      sudo "yum install nc -y"
+
+      run "src/install-runit-for-user.sh"
     end
 
     desc "Install memcached"
@@ -346,8 +361,9 @@ namespace :peepcode do
       # TODO Bail unless make 3.81 is installed
       cmd = [
         "cd src",
-        "git clone http://xph.us/src/beanstalkd.git",
-        "cd beanstalkd",
+        "wget http://xph.us/software/beanstalkd/rel/beanstalkd-1.0.tar.gz",
+        "tar xfz beanstalkd-1.0.tar.gz",
+        "cd beanstalkd-1.0",
         "/usr/local/bin/make",
         "sudo cp beanstalkd /usr/local/bin/"
       ].join(" && ")
