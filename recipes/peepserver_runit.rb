@@ -45,6 +45,21 @@ namespace :peepcode do
       install_runit_service("beanstalkd")
     end
 
+    desc "Install beanstalk worker for async-observer plugin"
+    task :async_observer do
+      async_observer_service_path = File.join(shared_runit_service_path, "#{application}-async_observer")
+      run "mkdir -p #{async_observer_service_path}"
+      
+      result = render_erb_template(File.dirname(__FILE__) + "/templates/async_observer_worker.erb")
+      put result, "#{async_observer_service_path}/run", :mode => 0755
+      run "ln -s #{async_observer_service_path} ~/service/"      
+    end
+    
+    desc "Restart async-observer worker for this application"
+    task :restart_async_observer do
+      run "sv restart ~/service/#{application}-async_observer"
+    end
+    
     desc "Install runit task for memcache"
     task :memcached do
       install_runit_service("memcached")
