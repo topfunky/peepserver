@@ -31,6 +31,13 @@ class Capistrano::Configuration
     end
     return output.to_s
   end
+  
+  ##
+  # Return the path to a file inside the Peepserver templates directory.
+  
+  def local_template_file_path(sub_path)
+    File.dirname(__FILE__) + "/templates/#{sub_path}"
+  end
 
 end
 
@@ -98,9 +105,10 @@ namespace :peepcode do
       # TODO
       # * Uninstall httpd: chkconfig --del httpd
 
-      runit
       git
       nginx
+      runit
+      beanstalkd
       memcached
       munin
       httperf
@@ -184,9 +192,7 @@ namespace :peepcode do
 
     desc "Install nginx"
     task :nginx do
-
-      result = File.read(File.dirname(__FILE__) + "/templates/install-nginx.sh")
-      put result, "src/install-nginx.sh"
+      upload local_template_file_path("install-nginx.sh"), "src/install-nginx.sh", :mode => 0755
 
       cmd = [
         "cd src",
@@ -196,11 +202,10 @@ namespace :peepcode do
       run cmd
     end
 
-    desc "Install runit"
+    desc "Install runit task manager"
     task :runit do
       %w(install-runit.sh install-runit-for-user.sh).each do |filename|
-        result = File.read(File.dirname(__FILE__) + "/templates/#{filename}")
-        put result, "src/#{filename}", :mode => 0755
+        upload local_template_file_path(filename), "src/#{filename}", :mode => 0755
       end
 
       sudo "src/install-runit.sh"
@@ -217,8 +222,7 @@ namespace :peepcode do
       sudo "mv ~/src/memcached-i386.conf /etc/ld.so.conf.d/memcached-i386.conf"
       sudo "/sbin/ldconfig"
 
-      result = File.read(File.dirname(__FILE__) + "/templates/install-memcached-linux.sh")
-      put result, "src/install-memcached-linux.sh"
+      upload local_template_file_path("install-memcached-linux.sh"), "src/install-memcached-linux.sh", :mode => 0755
 
       cmd = [
         "cd src",
@@ -269,8 +273,7 @@ namespace :peepcode do
       # Reset
       sudo "rm -f /etc/munin/plugins/*"
 
-      # Upload
-      put File.read(File.dirname(__FILE__) + "/templates/memcached_"), "/tmp/memcached_"
+      upload local_template_file_path("memcached_"), "/tmp/memcached_"
       sudo "cp /tmp/memcached_ /usr/share/munin/plugins/memcached_"
       sudo "chmod 755 /usr/share/munin/plugins/memcached_"
 
@@ -357,7 +360,7 @@ namespace :peepcode do
 
 
     desc "Install beanstalk in-memory queue"
-    task :beanstalk do
+    task :beanstalkd do
       # TODO Bail unless make 3.81 is installed
       cmd = [
         "cd src",
@@ -385,3 +388,5 @@ namespace :peepcode do
   end
 
 end
+
+# TODO sudo gem list | ruby -n -e 'puts $1 if ($_ =~ /(\S+) \(/)' | xargs sudo /opt/ruby-enterprise/bin/gem install

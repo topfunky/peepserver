@@ -1,0 +1,4 @@
+#!/bin/sh
+
+exec 2>&1
+exec /usr/local/bin/memcached -m 16 -l 127.0.0.1 -p 11211

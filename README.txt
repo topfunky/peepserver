@@ -7,7 +7,7 @@ PeepServer plugin for Capistrano.
 
 Provides Capistrano deployment tasks for setting up and maintaining a CentOS server such those installed at RailsMachine (http://railsmachine.com).
 
-Customize for your own situation.
+Some are highly customized for my current server (nginx, runit, thin, ruby-enterprise). You should customize it for your own situation.
 
 Use at your own risk.
 
