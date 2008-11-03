@@ -50,7 +50,7 @@ namespace :peepcode do
       async_observer_service_path = File.join(shared_runit_service_path, "#{application}-async_observer")
       run "mkdir -p #{async_observer_service_path}"
       
-      result = render_erb_template(File.dirname(__FILE__) + "/templates/async_observer_worker.erb")
+      result = render_erb_template(File.dirname(__FILE__) + "/templates/runit/async_observer_worker.erb")
       put result, "#{async_observer_service_path}/run", :mode => 0755
       run "ln -s #{async_observer_service_path} ~/service/"      
     end
