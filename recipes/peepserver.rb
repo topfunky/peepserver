@@ -31,6 +31,13 @@ class Capistrano::Configuration
     end
     return output.to_s
   end
+  
+  ##
+  # Return the path to a file inside the Peepserver templates directory.
+  
+  def local_template_file_path(sub_path)
+    File.dirname(__FILE__) + "/templates/#{sub_path}"
+  end
 
 end
 
@@ -100,6 +107,8 @@ namespace :peepcode do
 
       git
       nginx
+      runit
+      beanstalkd
       memcached
       munin
       httperf
@@ -183,9 +192,7 @@ namespace :peepcode do
 
     desc "Install nginx"
     task :nginx do
-
-      result = File.read(File.dirname(__FILE__) + "/templates/install-nginx.sh")
-      put result, "src/install-nginx.sh"
+      upload local_template_file_path("install-nginx.sh"), "src/install-nginx.sh", :mode => 0755
 
       cmd = [
         "cd src",
@@ -195,6 +202,19 @@ namespace :peepcode do
       run cmd
     end
 
+    desc "Install runit task manager"
+    task :runit do
+      %w(install-runit.sh install-runit-for-user.sh).each do |filename|
+        upload local_template_file_path(filename), "src/#{filename}", :mode => 0755
+      end
+
+      sudo "src/install-runit.sh"
+      # netcat is used by some scripts
+      sudo "yum install nc -y"
+
+      run "src/install-runit-for-user.sh"
+    end
+
     desc "Install memcached"
     task :memcached do
       # TODO Needs to run ldconfig after libevent is installed
@@ -202,8 +222,7 @@ namespace :peepcode do
       sudo "mv ~/src/memcached-i386.conf /etc/ld.so.conf.d/memcached-i386.conf"
       sudo "/sbin/ldconfig"
 
-      result = File.read(File.dirname(__FILE__) + "/templates/install-memcached-linux.sh")
-      put result, "src/install-memcached-linux.sh"
+      upload local_template_file_path("install-memcached-linux.sh"), "src/install-memcached-linux.sh", :mode => 0755
 
       cmd = [
         "cd src",
@@ -254,8 +273,7 @@ namespace :peepcode do
       # Reset
       sudo "rm -f /etc/munin/plugins/*"
 
-      # Upload
-      put File.read(File.dirname(__FILE__) + "/templates/memcached_"), "/tmp/memcached_"
+      upload local_template_file_path("memcached_"), "/tmp/memcached_"
       sudo "cp /tmp/memcached_ /usr/share/munin/plugins/memcached_"
       sudo "chmod 755 /usr/share/munin/plugins/memcached_"
 
@@ -342,16 +360,18 @@ namespace :peepcode do
 
 
     desc "Install beanstalk in-memory queue"
-    task :beanstalk do
+    task :beanstalkd do
       # TODO Bail unless make 3.81 is installed
       cmd = [
         "cd src",
-        "git clone http://xph.us/src/beanstalkd.git",
-        "cd beanstalkd",
+        "wget http://xph.us/software/beanstalkd/rel/beanstalkd-1.0.tar.gz",
+        "tar xfz beanstalkd-1.0.tar.gz",
+        "cd beanstalkd-1.0",
         "/usr/local/bin/make",
         "sudo cp beanstalkd /usr/local/bin/"
       ].join(" && ")
       run cmd
+      # TODO Activate with runit
     end
 
     desc "Upgrade to Ruby 1.8.6 and newest RubyGems"
@@ -368,3 +388,5 @@ namespace :peepcode do
   end
 
 end
+
+# TODO sudo gem list | ruby -n -e 'puts $1 if ($_ =~ /(\S+) \(/)' | xargs sudo /opt/ruby-enterprise/bin/gem install
