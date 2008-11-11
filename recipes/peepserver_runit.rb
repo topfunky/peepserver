@@ -59,7 +59,8 @@ namespace :peepcode do
 
     desc "Restart async-observer worker for this application"
     task :restart_async_observer do
-      run "sv restart ~/service/#{application}-async_observer"
+      # Try to force-restart, then continue if it fails
+      run "sv -w 20 force-restart ~/service/#{application}-async_observer; true"
     end
 
     desc "Install runit task for memcache"
