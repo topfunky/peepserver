@@ -1,4 +1,7 @@
 #!/bin/sh
 
+# Load custom environment vars
+. ~/.bash_profile
+
 exec 2>&1
 exec /opt/ruby-enterprise/bin/ruby <%= current_path %>/vendor/plugins/async-observer/bin/worker
